@@ -185,6 +185,15 @@ func unescapeChar(s string, isBytes bool) (value rune, encode bool, tail string,
 			err = fmt.Errorf("unable to unescape string")
 			return
 		}
+		// Disallow code points abouve U+10FFFF and those in the surrogate range.
+		switch {
+		case value < 0 || value > 0x10ffff:
+			err = fmt.Errorf("code points above U+10FFFF are not allowed")
+			return
+		case value >= 0xd800 && value <= 0xdfff:
+			err = fmt.Errorf("code points between U+D800 and U+DFFF are not allowed")
+			return
+		}
 		value = v
 
 	// 5. Octal escape sequences, must be three digits \[0-3][0-7][0-7]
